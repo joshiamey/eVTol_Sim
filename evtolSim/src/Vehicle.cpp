@@ -4,20 +4,18 @@
 
 static std::uniform_real_distribution<double> uniformDistDouble{0.0, 1.0};
 
-Vehicle::Vehicle(double cruiseSpeed, double batteryCapacity, double timeToCharge, double energyUseAtCruise, int passengerCount, double faultProbability, const std::string& identifier)
+Vehicle::Vehicle(double cruiseSpeed, double batteryCapacity, double timeToCharge, double energyUseAtCruise, int passengerCount, double faultProbability)
     : cruiseSpeed(cruiseSpeed),
       batteryCapacity(batteryCapacity),
       timeToCharge(timeToCharge),
       energyUseAtCruise(energyUseAtCruise),
       passengerCount(passengerCount),
       faultProbabilityPerHour(faultProbability),
-      identifier(identifier),
       stats(),
       rd(),
       mtGen(rd())
 {
-    std::cout << "Vehicle " << identifier << " constructed with parameters." << std::endl;
-
+    // Calculate range
     range = (batteryCapacity / energyUseAtCruise);
     
     flightTimeInMs = (range / cruiseSpeed) * kHrsToMs;
@@ -58,11 +56,6 @@ void Vehicle::process(VehicleState state, uint64_t start, uint64_t endTime)
     }
 
     currState = state;
-}
-
-Vehicle::~Vehicle()
-{
-    std::cout << "Vehicle " << identifier << " destructed." << std::endl;
 }
 
 void Vehicle::checkFault(uint64_t startTime, uint64_t endTime)

@@ -9,7 +9,6 @@
 #include <iostream>
 #include <random>
 #include <map>
-#include <memory>
 
 class EvtolSimulation
 {
@@ -21,7 +20,7 @@ class EvtolSimulation
 
         void runSimulation();
 
-        ~EvtolSimulation();
+        ~EvtolSimulation() = default;
 
     private:
         const uint64_t kHrsInMs = 3600 * 1000;

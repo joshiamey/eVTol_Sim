@@ -34,27 +34,27 @@ EvtolSimulation::EvtolSimulation(int vehicleCount, int chargerCount, double dura
             {
                 case VhType::ALPHA:
                 {
-                    vhType.addVehicle(120,320,0.6,1.6,4,0.25,"Alpha");                    
+                    vhType.addVehicle(120,320,0.6,1.6,4,0.25);                    
                     break;
                 }
                 case VhType::BRAVO:
                 {
-                    vhType.addVehicle(100,100,0.2,1.5,5,0.10,"Bravo");                    
+                    vhType.addVehicle(100,100,0.2,1.5,5,0.10);                    
                     break;
                 }
                 case VhType::CHARLIE:
                 {
-                    vhType.addVehicle(160,220,0.8,2.2,3,0.05,"Charlie");                    
+                    vhType.addVehicle(160,220,0.8,2.2,3,0.05);                    
                     break;
                 }
                 case VhType::DELTA:
                 {
-                    vhType.addVehicle(90,120,0.62,0.8,2,0.22,"Delta");                    
+                    vhType.addVehicle(90,120,0.62,0.8,2,0.22);                    
                     break;
                 }
                 case VhType::ECHO:
                 {
-                    vhType.addVehicle(30,150,0.3,5.8,2,0.61,"Echo");                    
+                    vhType.addVehicle(30,150,0.3,5.8,2,0.61);                    
                     break;
                 }
                 default:
@@ -168,8 +168,5 @@ void EvtolSimulation::runSimulation()
         // TODO separate evaluate and print
         vhType.evaluateAndPrintStats();
     }
-
-EvtolSimulation::~EvtolSimulation()
-{
-
 }
+

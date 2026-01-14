@@ -53,7 +53,7 @@ class VehicleType
     public:
         VehicleType(VhType type);
 
-        void addVehicle(double cruiseSpeed, double batteryCapacity, double timeToCharge, double energyUseAtCruise, int passengerCount, double faultProbability, const std::string& identifier);
+        void addVehicle(double cruiseSpeed, double batteryCapacity, double timeToCharge, double energyUseAtCruise, int passengerCount, double faultProbability);
 
         void evaluateAndPrintStats();
 

@@ -9,10 +9,10 @@ VehicleType::VehicleType(VhType type):
 {
 }
 
-void VehicleType::addVehicle(double cruiseSpeed, double batteryCapacity, double timeToCharge, double energyUseAtCruise, int passengerCount, double faultProbability, const std::string& identifier)
+void VehicleType::addVehicle(double cruiseSpeed, double batteryCapacity, double timeToCharge, double energyUseAtCruise, int passengerCount, double faultProbability)
 {
     vehicleList.push_back(make_unique<Vehicle>(cruiseSpeed,batteryCapacity,timeToCharge,
-    energyUseAtCruise,passengerCount,faultProbability,identifier));
+    energyUseAtCruise,passengerCount,faultProbability));
     
     typeStats.passengersPerVehicle = passengerCount; // TODO , betterway to initialize this only once
     typeStats.numVehicles++;

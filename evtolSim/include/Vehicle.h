@@ -30,7 +30,7 @@ class Vehicle
 {
 public:
     // Constructors
-    Vehicle(double cruiseSpeed, double batteryCapacity, double timeToCharge, double energyUseAtCruise, int passengerCount, double faultProbability, const std::string& identifier);
+    Vehicle(double cruiseSpeed, double batteryCapacity, double timeToCharge, double energyUseAtCruise, int passengerCount, double faultProbability);
 
     // Returns the Range of the Vehicle based on energyUse and battery capacity
     inline double getRange()
@@ -56,7 +56,7 @@ public:
 
     void process(VehicleState state, uint64_t start, uint64_t endTime) ;
     // Destructor
-    ~Vehicle();
+    ~Vehicle() = default;
 
     VehicleStats stats;
 
@@ -70,7 +70,6 @@ private:
     double energyUseAtCruise;
     int passengerCount;
     double faultProbabilityPerHour;
-    std::string identifier;
     VehicleState currState;
     double range;
     uint64_t flightTimeInMs;
