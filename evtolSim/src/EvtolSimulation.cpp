@@ -22,46 +22,53 @@ EvtolSimulation::EvtolSimulation(int vehicleCount, int chargerCount, double dura
     vhTypeMap.emplace(VhType::ECHO, VhType::ECHO);
 
 
-    int numVehiclesPerType = (numVehicles/static_cast<int>(vhTypeMap.size()));
-
-    for(auto& elem : vhTypeMap)
+    std::vector<VhType> vehicleTypes;
+    for (auto const& pair : vhTypeMap)
     {
-        VhType vType = elem.first;
-        VehicleType& vhType = elem.second;
-        for(int j = 1 ; j <=numVehiclesPerType ; ++j)
+        vehicleTypes.push_back(pair.first);
+    }
+
+    // Create uniform distribution based on number of types of vehicles
+    std::uniform_int_distribution<int> dist(0, static_cast<int>(vehicleTypes.size() - 1));
+
+    for (int i = 0; i < numVehicles; ++i)
+     {
+        // Get a type based on random number generated
+        // and add the vehicle of that type
+        VhType vType = vehicleTypes[dist(mtGen)];
+        VehicleType& vhType = vhTypeMap.at(vType);
+
+        switch (vType)
         {
-            switch (vType)
+            case VhType::ALPHA:
             {
-                case VhType::ALPHA:
-                {
-                    vhType.addVehicle(120,320,0.6,1.6,4,0.25);                    
-                    break;
-                }
-                case VhType::BRAVO:
-                {
-                    vhType.addVehicle(100,100,0.2,1.5,5,0.10);                    
-                    break;
-                }
-                case VhType::CHARLIE:
-                {
-                    vhType.addVehicle(160,220,0.8,2.2,3,0.05);                    
-                    break;
-                }
-                case VhType::DELTA:
-                {
-                    vhType.addVehicle(90,120,0.62,0.8,2,0.22);                    
-                    break;
-                }
-                case VhType::ECHO:
-                {
-                    vhType.addVehicle(30,150,0.3,5.8,2,0.61);                    
-                    break;
-                }
-                default:
-                    break;
+                vhType.addVehicle(120,320,0.6,1.6,4,0.25);                    
+                break;
             }
+            case VhType::BRAVO:
+            {
+                vhType.addVehicle(100,100,0.2,1.5,5,0.10);                    
+                break;
+            }
+            case VhType::CHARLIE:
+            {
+                vhType.addVehicle(160,220,0.8,2.2,3,0.05);                    
+                break;
+            }
+            case VhType::DELTA:
+            {
+                vhType.addVehicle(90,120,0.62,0.8,2,0.22);                    
+                break;
+            }
+            case VhType::ECHO:
+            {
+                vhType.addVehicle(30,150,0.3,5.8,2,0.61);                    
+                break;
+            }
+            default:
+                break;
         }
-    } 
+    }
 
     for(auto& elem : vhTypeMap)
     {
@@ -74,8 +81,6 @@ EvtolSimulation::EvtolSimulation(int vehicleCount, int chargerCount, double dura
         }
     }
 
-    // Randomize the vehicle list
-    std::shuffle(simVehicles.begin(), simVehicles.end(), mtGen);
 }
 
 void EvtolSimulation::initializeSimulation()

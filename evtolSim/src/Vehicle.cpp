@@ -1,8 +1,8 @@
 #include "Vehicle.h"
 #include <iostream>
+#include <cmath>
 
 
-static std::uniform_real_distribution<double> uniformDistDouble{0.0, 1.0};
 
 Vehicle::Vehicle(double cruiseSpeed, double batteryCapacity, double timeToCharge, double energyUseAtCruise, int passengerCount, double faultProbability)
     : cruiseSpeed(cruiseSpeed),
@@ -26,29 +26,30 @@ void Vehicle::process(VehicleState state, uint64_t start, uint64_t endTime)
 {
     switch (state)
     {
-    case VehicleState::FLIGHT_OVER:
-    {        
-        stats.totalFlights++;
-        stats.totalFlightTimeInMs += (endTime - start);
-        stats.totalDistance += range;
+        case VehicleState::FLIGHT_OVER:
+        {        
+            stats.totalFlights++;
+            stats.totalFlightTimeInMs += (endTime - start);
+            stats.totalDistance += range;
 
-        checkFault(start,endTime);
-        
-    }
+            checkFault(start,endTime);
+            
+        }
         /* code */
         break;
     
-    case VehicleState::CHARGE_OVER:
-        {
-            stats.numCharges++;
-            stats.totalChargeTimeInMs += (endTime - start);
-        }
+        case VehicleState::CHARGE_OVER:
+            {
+                stats.numCharges++;
+                stats.totalChargeTimeInMs += (endTime - start);
+            }
         break;
+        
         case VehicleState::WAIT_FOR_CHARGING:
-        {
-            stats.numWaitingForCharges++;
-            stats.totalWaitForChargingTimeInMs += (endTime - start);
-        }
+            {
+                stats.numWaitingForCharges++;
+                stats.totalWaitForChargingTimeInMs += (endTime - start);
+            }
         break;
 
     default:
@@ -60,10 +61,20 @@ void Vehicle::process(VehicleState state, uint64_t start, uint64_t endTime)
 
 void Vehicle::checkFault(uint64_t startTime, uint64_t endTime)
 {
-    double randNum = uniformDistDouble(mtGen);
-    double faultProb = faultProbabilityPerHour * static_cast<double>(((endTime - startTime) / kHrsToMs));
-    if(randNum <= faultProb)
+    // Calculate the mean (average) number of faults expected for this specific flight duration.
+    double flightDurationInHrs = static_cast<double>((endTime - startTime) / kHrsToMs);
+    double mean_faults_for_flight = faultProbabilityPerHour * flightDurationInHrs;
+
+    // Create a new Poisson distribution specifically for this flight's duration.
+    // Note: The distribution object itself is very lightweight.
+    std::poisson_distribution<int> dist(mean_faults_for_flight);
+
+    // Generate the number of faults that occurred during this flight.
+    int num_faults = dist(mtGen);
+
+    // Add the generated number of faults to the stats.
+    if (num_faults > 0)
     {
-        stats.totalNumFaults++;
+        stats.totalNumFaults += num_faults;
     }
 }

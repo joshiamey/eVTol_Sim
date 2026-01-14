@@ -38,14 +38,14 @@ void VehicleType::evaluateAndPrintStats()
 
     if (typeStats.totalFlights > 0)
     {
-        typeStats.avgDistancePerFlightInMiles = (typeStats.totalDistanceMiles / typeStats.totalFlights);
-        typeStats.avgFlightTimePerFlightInHrs = ((typeStats.totalFlightTimeInMs / typeStats.totalFlights) / kHrsToMs);
+        typeStats.avgDistancePerFlightInMiles = (typeStats.totalDistanceMiles / static_cast<double>(typeStats.totalFlights));
+        typeStats.avgFlightTimePerFlightInHrs = ((static_cast<double>(typeStats.totalFlightTimeInMs) / typeStats.totalFlights) / kHrsToMs);
     }
 
     if (typeStats.totalNumCharges > 0)
     {
-        typeStats.avgTimeChargingPerSessionInHrs = ((typeStats.totalChargeTimeInMs / typeStats.totalNumCharges) / kHrsToMs);
-        typeStats.avgWaitTimePerChargeInHrs = ((typeStats.totalWaitForChargeTimeInMs / typeStats.totalNumCharges) / kHrsToMs);
+        typeStats.avgTimeChargingPerSessionInHrs = ((static_cast<double>(typeStats.totalChargeTimeInMs) / typeStats.totalNumCharges) / kHrsToMs);
+        typeStats.avgWaitTimePerChargeInHrs = ((static_cast<double>(typeStats.totalWaitForChargeTimeInMs) / typeStats.totalNumWaitForCharges) / kHrsToMs);
     }
     
     // Then print
@@ -56,6 +56,7 @@ void VehicleType::evaluateAndPrintStats()
     cout << "Total passenger miles: " << typeStats.totalPassengerMiles << endl;
     cout << "Total flights: " << typeStats.totalFlights << endl;
     cout << "Total faults: " << typeStats.totalFaults << endl;
+    cout << "Total Num Wait for Chargers: "<< typeStats.totalNumWaitForCharges << endl;
     cout << "Average distance per flight (miles): " << typeStats.avgDistancePerFlightInMiles << endl;
     cout << "Average flight time per flight (hours): " << typeStats.avgFlightTimePerFlightInHrs << endl;
     cout << "Average time charging per session (hours): " << typeStats.avgTimeChargingPerSessionInHrs << endl;

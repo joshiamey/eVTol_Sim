@@ -13,3 +13,32 @@
   - Flight over event by calculating time to complete the range distance for battery capacity.
   - Charge over event by calculating time required to charge.
 - On every event, call the vehicle's process function to record stats.
+
+## Build Instructions
+
+This project uses CMake to build the simulation executable.
+
+1.  **Navigate to the project root directory.**
+
+2.  **Create a build directory and navigate into it:**
+    ```sh
+    mkdir -p build
+    cd build
+    ```
+
+3.  **Run CMake to configure the project.** Point it to the `evtolSim` directory where the `CMakeLists.txt` file is located:
+    ```sh
+    cmake ../evtolSim
+    ```
+
+4.  **Compile the project using Make:**
+    ```sh
+    make
+    ```
+
+5.  **Run the simulation executable:**
+    ```sh
+    ./evtolSim
+    ```
+
+## Build Instructions
