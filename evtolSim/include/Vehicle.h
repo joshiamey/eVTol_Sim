@@ -63,7 +63,7 @@ public:
 private:
 
     void checkFault(uint64_t startTime, uint64_t endTime);
-    const uint64_t kHrsToMs = 3600000; // 1 hour = 3600 * 1000 milliseconds
+    const uint64_t kHrsToMs = 3600 * 1000; // 1 hour = 3600 * 1000 milliseconds
     double cruiseSpeed;
     double batteryCapacity;
     double timeToCharge;
