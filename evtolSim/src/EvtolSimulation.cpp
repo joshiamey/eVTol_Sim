@@ -86,7 +86,7 @@ void EvtolSimulation::initializeSimulation()
 
     for(auto& vehicle : simVehicles)
     {
-        eventQueue.emplace(EventType::FLIGHT_OVER,vehicle->getFlightTimeInMs(),vehicle);
+        eventPriorityQueue.emplace(EventType::FLIGHT_OVER,vehicle->getFlightTimeInMs(),vehicle);
     }
 }
 
@@ -95,10 +95,12 @@ void EvtolSimulation::runSimulation()
     uint32_t chargersInUse = 0;
     uint64_t current = 0;
 
-    while(!eventQueue.empty())
+    // Process events added to the priority queue, events are added based on time 
+    // one with least time will be processed
+    while(!eventPriorityQueue.empty())
     {
-        VehicleSimEvent event = eventQueue.top();
-        eventQueue.pop();
+        VehicleSimEvent event = eventPriorityQueue.top();
+        eventPriorityQueue.pop();
         
         current = event.getEventTime();
         if (current > simDurationInMs) {
@@ -108,7 +110,11 @@ void EvtolSimulation::runSimulation()
         Vehicle* vehicle = event.getVehicle();
 
         switch (event.getEventType())
-        {
+        {   
+
+            // if flight over event , get start time and calculate the stats
+            // also calculate the fault (check vehicle process function)
+            // Add charge over event next or add the vehicle to the charging queue
             case EventType::FLIGHT_OVER:
             {
                 uint64_t flightStartTime = current - vehicle->getFlightTimeInMs();
@@ -118,7 +124,7 @@ void EvtolSimulation::runSimulation()
                 {
                     ++chargersInUse;
                     uint64_t chargeFinishTime = current + vehicle->getChargeTimeInMs();
-                    eventQueue.emplace(EventType::CHARGE_OVER, chargeFinishTime, vehicle);
+                    eventPriorityQueue.emplace(EventType::CHARGE_OVER, chargeFinishTime, vehicle);
                 }
                 else
                 {
@@ -126,13 +132,17 @@ void EvtolSimulation::runSimulation()
                 }
             }
             break;
-                
+            
+            // get start time and calculate charge stats based on time
+            // if charger becomes available , pick the vehicle in front of the queue
+            // process wait charge time stats for that waiting vehicle
+            
             case EventType::CHARGE_OVER:
             {
                 uint64_t chargeStartTime = current - vehicle->getChargeTimeInMs();
                 vehicle->process(VehicleState::CHARGE_OVER, chargeStartTime, current);
 
-                eventQueue.emplace(EventType::FLIGHT_OVER, current + vehicle->getFlightTimeInMs(), vehicle);
+                eventPriorityQueue.emplace(EventType::FLIGHT_OVER, current + vehicle->getFlightTimeInMs(), vehicle);
                 --chargersInUse;
 
                 if(!chargingQueue.empty())
@@ -149,7 +159,7 @@ void EvtolSimulation::runSimulation()
                         
                         ++chargersInUse;
                         uint64_t chargeFinishTime = current + waitVehicle->getChargeTimeInMs();
-                        eventQueue.emplace(EventType::CHARGE_OVER, chargeFinishTime, waitVehicle);
+                        eventPriorityQueue.emplace(EventType::CHARGE_OVER, chargeFinishTime, waitVehicle);
                     }
                 }
             }
