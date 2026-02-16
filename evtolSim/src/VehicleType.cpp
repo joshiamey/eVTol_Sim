@@ -9,16 +9,15 @@ VehicleType::VehicleType(VhType type):
 {
 }
 
-void VehicleType::addVehicle(double cruiseSpeed, double batteryCapacity, double timeToCharge, double energyUseAtCruise, int passengerCount, double faultProbability)
+void VehicleType::addVehicle(const Vehicle* vh)
 {
-    vehicleList.push_back(make_unique<Vehicle>(cruiseSpeed,batteryCapacity,timeToCharge,
-    energyUseAtCruise,passengerCount,faultProbability));
+    vehicleList.push_back(vh);
     
-    typeStats.passengersPerVehicle = passengerCount; // TODO , betterway to initialize this only once
+    typeStats.passengersPerVehicle = vh->getPassengerCount(); // TODO , betterway to initialize this only once
     typeStats.numVehicles++;
 }
 
-void VehicleType::evaluateAndPrintStats()
+void VehicleType::evaluateStats()
 {   
     // First evaluate
     for(auto& vehicle : vehicleList)
@@ -34,7 +33,7 @@ void VehicleType::evaluateAndPrintStats()
     }
 
     // Calculcate average and total Passenger miles
-    typeStats.totalPassengerMiles = (typeStats.numVehicles * typeStats.totalDistanceMiles * typeStats.passengersPerVehicle);
+    typeStats.totalPassengerMiles =  typeStats.totalDistanceMiles * typeStats.passengersPerVehicle;
 
     if (typeStats.totalFlights > 0)
     {
@@ -45,9 +44,16 @@ void VehicleType::evaluateAndPrintStats()
     if (typeStats.totalNumCharges > 0)
     {
         typeStats.avgTimeChargingPerSessionInHrs = ((static_cast<double>(typeStats.totalChargeTimeInMs) / typeStats.totalNumCharges) / kHrsToMs);
+    }
+
+    if(typeStats.totalNumWaitForCharges > 0)
+    {
         typeStats.avgWaitTimePerChargeInHrs = ((static_cast<double>(typeStats.totalWaitForChargeTimeInMs) / typeStats.totalNumWaitForCharges) / kHrsToMs);
     }
-    
+}
+
+void VehicleType::printStats()
+{
     // Then print
     cout << "=================================================" << endl;
     cout << "Statistics for vehicle type: " << getStringFromType() << endl;
@@ -62,11 +68,6 @@ void VehicleType::evaluateAndPrintStats()
     cout << "Average time charging per session (hours): " << typeStats.avgTimeChargingPerSessionInHrs << endl;
     cout << "Average wait time per charge (hours): " << typeStats.avgWaitTimePerChargeInHrs << endl;
     cout << "=================================================" << endl;
-}
-
-std::vector<std::unique_ptr<Vehicle>> &VehicleType::getVehicleList()
-{
-    return vehicleList;
 }
 
 const char* VehicleType::getStringFromType()

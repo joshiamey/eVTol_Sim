@@ -30,7 +30,7 @@ class EvtolSimulation
         int numChargers;
         // Min-heap of simulation events, ordered by time
         std::priority_queue<VehicleSimEvent, std::vector<VehicleSimEvent>, std::greater<VehicleSimEvent>> eventPriorityQueue;
-        std::vector<Vehicle*>simVehicles;
+        std::vector<std::unique_ptr<Vehicle>> simVehicles;
         std::map<VhType,VehicleType> vhTypeMap;
         std::queue<std::pair<uint64_t,Vehicle*>>chargingQueue;
         std::random_device rd;

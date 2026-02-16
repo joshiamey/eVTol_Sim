@@ -53,16 +53,16 @@ class VehicleType
     public:
         VehicleType(VhType type);
 
-        void addVehicle(double cruiseSpeed, double batteryCapacity, double timeToCharge, double energyUseAtCruise, int passengerCount, double faultProbability);
+        void addVehicle(const Vehicle* vh);
 
-        void evaluateAndPrintStats();
+        void evaluateStats();
 
-        std::vector<std::unique_ptr<Vehicle>>& getVehicleList();
+        void printStats();
 
     private:
         const char* getStringFromType();
         const uint64_t kHrsToMs = 3600 * 1000; // 1 hour = 3600 * 1000 milliseconds
         VhType vehicleType;
         VhTypeStats typeStats;
-        std::vector<std::unique_ptr<Vehicle>> vehicleList;        
+        std::vector<const Vehicle*> vehicleList;        
 };

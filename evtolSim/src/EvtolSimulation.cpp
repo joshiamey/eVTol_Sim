@@ -28,59 +28,27 @@ EvtolSimulation::EvtolSimulation(int vehicleCount, int chargerCount, double dura
         vehicleTypes.push_back(pair.first);
     }
 
+    static const std::map<VhType, VehicleSpecifications> kVehicleSpecMap = {
+    {VhType::ALPHA, {120, 320, 0.6, 1.6, 0.25, 4}},
+    {VhType::BRAVO, {100, 100, 0.2, 1.5, 0.10, 5}},
+    {VhType::CHARLIE, {160, 220, 0.8, 2.2, 0.05, 3}},
+    {VhType::DELTA, {90, 120, 0.62, 0.8, 0.22, 2}},
+    {VhType::ECHO, {30, 150, 0.3, 5.8, 0.61, 2}}
+    };
     // Create uniform distribution based on number of types of vehicles
     std::uniform_int_distribution<int> dist(0, static_cast<int>(vehicleTypes.size() - 1));
 
     for (int i = 0; i < numVehicles; ++i)
-     {
+    {
         // Get a type based on random number generated
         // and add the vehicle of that type
         VhType vType = vehicleTypes[dist(mtGen)];
         VehicleType& vhType = vhTypeMap.at(vType);
+        const VehicleSpecifications& spec = kVehicleSpecMap.at(vType);
 
-        switch (vType)
-        {
-            case VhType::ALPHA:
-            {
-                vhType.addVehicle(120,320,0.6,1.6,4,0.25);                    
-                break;
-            }
-            case VhType::BRAVO:
-            {
-                vhType.addVehicle(100,100,0.2,1.5,5,0.10);                    
-                break;
-            }
-            case VhType::CHARLIE:
-            {
-                vhType.addVehicle(160,220,0.8,2.2,3,0.05);                    
-                break;
-            }
-            case VhType::DELTA:
-            {
-                vhType.addVehicle(90,120,0.62,0.8,2,0.22);                    
-                break;
-            }
-            case VhType::ECHO:
-            {
-                vhType.addVehicle(30,150,0.3,5.8,2,0.61);                    
-                break;
-            }
-            default:
-                break;
-        }
-    }
-
-    for(auto& elem : vhTypeMap)
-    {
-        VehicleType& vhType = elem.second;
-
-        for(auto& vehicle : vhType.getVehicleList())
-        {
-            // get the raw pointer
-            simVehicles.push_back(vehicle.get());
-        }
-    }
-
+        simVehicles.push_back(make_unique<Vehicle>(spec));
+        vhType.addVehicle(simVehicles.back().get());
+    } 
 }
 
 void EvtolSimulation::initializeSimulation()
@@ -91,7 +59,7 @@ void EvtolSimulation::initializeSimulation()
 
     for(auto& vehicle : simVehicles)
     {
-        eventPriorityQueue.emplace(EventType::FLIGHT_OVER,vehicle->getFlightTimeInMs(),vehicle);
+        eventPriorityQueue.emplace(EventType::FLIGHT_OVER,vehicle->getFlightTimeInMs(),vehicle.get());
     }
 }
 
@@ -180,8 +148,8 @@ void EvtolSimulation::runSimulation()
     for(auto& elem : vhTypeMap)
     {
         VehicleType& vhType = elem.second;
-        // TODO separate evaluate and print
-        vhType.evaluateAndPrintStats();
+        vhType.evaluateStats();
+        vhType.printStats();
     }
 }
 

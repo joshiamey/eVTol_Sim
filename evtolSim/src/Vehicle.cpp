@@ -4,13 +4,13 @@
 
 
 
-Vehicle::Vehicle(double cruiseSpeed, double batteryCapacity, double timeToCharge, double energyUseAtCruise, int passengerCount, double faultProbability)
-    : cruiseSpeed(cruiseSpeed),
-      batteryCapacity(batteryCapacity),
-      timeToCharge(timeToCharge),
-      energyUseAtCruise(energyUseAtCruise),
-      passengerCount(passengerCount),
-      faultProbabilityPerHour(faultProbability),
+Vehicle::Vehicle(const VehicleSpecifications& spec)
+    : cruiseSpeed(spec.cruiseSpeed),
+      batteryCapacity(spec.batteryCapacity),
+      timeToCharge(spec.timeToCharge),
+      energyUseAtCruise(spec.energyUseAtCruise),
+      passengerCount(spec.passengerCount),
+      faultProbabilityPerHour(spec.faultProbability),
       stats(),
       rd(),
       mtGen(rd())
@@ -62,7 +62,7 @@ void Vehicle::process(VehicleState state, uint64_t start, uint64_t endTime)
 void Vehicle::checkFault(uint64_t startTime, uint64_t endTime)
 {
     // Calculate the mean (average) number of faults expected for this specific flight duration.
-    double flightDurationInHrs = static_cast<double>((endTime - startTime) / kHrsToMs);
+    double flightDurationInHrs = static_cast<double>(endTime - startTime) / static_cast<double>(kHrsToMs);
     double mean_faults_for_flight = faultProbabilityPerHour * flightDurationInHrs;
 
     // Create a new Poisson distribution specifically for this flight's duration.

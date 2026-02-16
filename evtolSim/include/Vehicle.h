@@ -12,7 +12,7 @@ enum class VehicleState
     CHARGE_OVER
 };
 
-typedef struct VehicleStats_t
+struct VehicleStats
 {
     // required status
     uint32_t totalNumFaults;
@@ -24,34 +24,49 @@ typedef struct VehicleStats_t
     uint32_t numCharges;
     uint64_t totalChargeTimeInMs;
 
-} VehicleStats;
+    VehicleStats() : totalNumFaults(0), totalFlights(0), totalFlightTimeInMs(0), totalDistance(0), totalWaitForChargingTimeInMs(0), numWaitingForCharges(0), numCharges(0), totalChargeTimeInMs(0) {}
+
+};
+
+struct VehicleSpecifications {
+    double cruiseSpeed, batteryCapacity, timeToCharge;
+    double energyUseAtCruise, faultProbability;
+    int passengerCount;
+};
+
+
 
 class Vehicle 
 {
 public:
     // Constructors
-    Vehicle(double cruiseSpeed, double batteryCapacity, double timeToCharge, double energyUseAtCruise, int passengerCount, double faultProbability);
+    Vehicle(const VehicleSpecifications& spec);
 
     // Returns the Range of the Vehicle based on energyUse and battery capacity
-    inline double getRange()
+    inline const double getRange() const
     {
         return range;
     }
 
     // Get flight time , time taken to cover entire range at the given cruise speed
-    inline uint64_t getFlightTimeInMs()
+    inline const uint64_t getFlightTimeInMs() const
     {
         return flightTimeInMs;
     }
 
-    inline uint64_t getChargeTimeInMs()
+    inline const uint64_t getChargeTimeInMs() const
     {
         return timeToCharge * kHrsToMs;
     }
 
-    inline double getFaultPerHour()
+    inline const double getFaultPerHour() const 
     {
         return faultProbabilityPerHour;
+    }
+
+    inline const int getPassengerCount() const
+    {
+        return passengerCount;
     }
 
     void process(VehicleState state, uint64_t start, uint64_t endTime) ;

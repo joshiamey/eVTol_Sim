@@ -7,8 +7,7 @@
 enum class EventType
 {
     FLIGHT_OVER,
-    CHARGE_OVER,
-    FAULT
+    CHARGE_OVER
 };
 
 class VehicleSimEvent
