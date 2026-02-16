@@ -21,15 +21,16 @@ void VehicleType::evaluateStats()
 {   
     // First evaluate
     for(auto& vehicle : vehicleList)
-    {
-        typeStats.totalFlights += vehicle->stats.totalFlights;
-        typeStats.totalFaults += vehicle->stats.totalNumFaults;
-        typeStats.totalDistanceMiles += vehicle->stats.totalDistance;
-        typeStats.totalNumCharges += vehicle->stats.numCharges;
-        typeStats.totalFlightTimeInMs += vehicle->stats.totalFlightTimeInMs;
-        typeStats.totalChargeTimeInMs += vehicle->stats.totalChargeTimeInMs;
-        typeStats.totalWaitForChargeTimeInMs += vehicle->stats.totalWaitForChargingTimeInMs;
-        typeStats.totalNumWaitForCharges += vehicle->stats.numWaitingForCharges; 
+    {   
+        const auto& vhStats = vehicle->getStats();
+        typeStats.totalFlights += vhStats.totalFlights;
+        typeStats.totalFaults += vhStats.totalNumFaults;
+        typeStats.totalDistanceMiles += vhStats.totalDistance;
+        typeStats.totalNumCharges += vhStats.numCharges;
+        typeStats.totalFlightTimeInMs += vhStats.totalFlightTimeInMs;
+        typeStats.totalChargeTimeInMs += vhStats.totalChargeTimeInMs;
+        typeStats.totalWaitForChargeTimeInMs += vhStats.totalWaitForChargingTimeInMs;
+        typeStats.totalNumWaitForCharges += vhStats.numWaitingForCharges; 
     }
 
     // Calculcate average and total Passenger miles

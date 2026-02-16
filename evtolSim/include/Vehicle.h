@@ -69,11 +69,14 @@ public:
         return passengerCount;
     }
 
+    inline const VehicleStats& getStats() const
+    {
+        return stats;
+    }
+
     void process(VehicleState state, uint64_t start, uint64_t endTime) ;
     // Destructor
     ~Vehicle() = default;
-
-    VehicleStats stats;
 
 private:
 
@@ -90,6 +93,7 @@ private:
     uint64_t flightTimeInMs;
     std::random_device rd;
     std::mt19937 mtGen;
+    VehicleStats stats;
 };
 
 #endif // VEHICLE_H
