@@ -12,5 +12,5 @@ add_executable(evtolSim src/main.cpp)
 target_sources(evtolSim PRIVATE
     src/Vehicle.cpp
     src/EvtolSimulation.cpp
-    src/VehicleType.cpp
+    src/StatsRunner.cpp
 )

@@ -1,4 +1,5 @@
 #include "EvtolSimulation.h"
+#include "Vehicle.h"
 #include <algorithm>
 #include <random>
 
@@ -11,30 +12,18 @@ EvtolSimulation::EvtolSimulation(int vehicleCount, int chargerCount, double dura
     simVehicles(),
     rd(),
     mtGen(rd()),
-    vhTypeMap()
+    statsRunner(mtGen)
 {
-    simDurationInMs = durationInHrs * kHrsInMs;
-        // Add vehicle types
-    vhTypeMap.emplace(VhType::ALPHA, VhType::ALPHA);
-    vhTypeMap.emplace(VhType::BRAVO, VhType::BRAVO);
-    vhTypeMap.emplace(VhType::CHARLIE, VhType::CHARLIE);
-    vhTypeMap.emplace(VhType::DELTA, VhType::DELTA);
-    vhTypeMap.emplace(VhType::ECHO, VhType::ECHO);
+    simDurationInMs = durationInHrs * kHrsToMs;
+    const auto& specificationsmap = getVehicleSpecMap();
 
 
     std::vector<VhType> vehicleTypes;
-    for (auto const& pair : vhTypeMap)
+    for (auto const& pair : specificationsmap)
     {
         vehicleTypes.push_back(pair.first);
     }
 
-    static const std::map<VhType, VehicleSpecifications> kVehicleSpecMap = {
-    {VhType::ALPHA, {120, 320, 0.6, 1.6, 0.25, 4}},
-    {VhType::BRAVO, {100, 100, 0.2, 1.5, 0.10, 5}},
-    {VhType::CHARLIE, {160, 220, 0.8, 2.2, 0.05, 3}},
-    {VhType::DELTA, {90, 120, 0.62, 0.8, 0.22, 2}},
-    {VhType::ECHO, {30, 150, 0.3, 5.8, 0.61, 2}}
-    };
     // Create uniform distribution based on number of types of vehicles
     std::uniform_int_distribution<int> dist(0, static_cast<int>(vehicleTypes.size() - 1));
 
@@ -43,11 +32,10 @@ EvtolSimulation::EvtolSimulation(int vehicleCount, int chargerCount, double dura
         // Get a type based on random number generated
         // and add the vehicle of that type
         VhType vType = vehicleTypes[dist(mtGen)];
-        VehicleType& vhType = vhTypeMap.at(vType);
-        const VehicleSpecifications& spec = kVehicleSpecMap.at(vType);
+        const VehicleSpecifications& spec = specificationsmap.at(vType);
 
-        simVehicles.push_back(make_unique<Vehicle>(spec));
-        vhType.addVehicle(simVehicles.back().get());
+        simVehicles.push_back(make_unique<Vehicle>(i, vType, spec));
+        statsRunner.addVehicle(simVehicles.back().get());
     } 
 }
 
@@ -91,7 +79,7 @@ void EvtolSimulation::runSimulation()
             case EventType::FLIGHT_OVER:
             {
                 uint64_t flightStartTime = current - vehicle->getFlightTimeInMs();
-                vehicle->process(VehicleState::FLIGHT_OVER, flightStartTime, current);
+                statsRunner.processFlightOverEvent(vehicle, flightStartTime, current);
 
                 if(chargersInUse < numChargers)
                 {
@@ -113,27 +101,25 @@ void EvtolSimulation::runSimulation()
             case EventType::CHARGE_OVER:
             {
                 uint64_t chargeStartTime = current - vehicle->getChargeTimeInMs();
-                vehicle->process(VehicleState::CHARGE_OVER, chargeStartTime, current);
+                statsRunner.processChargeOverEvent(vehicle, chargeStartTime, current);
 
                 eventPriorityQueue.emplace(EventType::FLIGHT_OVER, current + vehicle->getFlightTimeInMs(), vehicle);
                 --chargersInUse;
 
                 if(!chargingQueue.empty())
                 {
-                    if (chargersInUse < numChargers)
-                    {
-                        auto waitForChargePair = chargingQueue.front();
-                        chargingQueue.pop();
-                        
-                        uint64_t waitStartTime = waitForChargePair.first;
-                        Vehicle* waitVehicle = waitForChargePair.second;
 
-                        waitVehicle->process(VehicleState::WAIT_FOR_CHARGING, waitStartTime, current);
-                        
-                        ++chargersInUse;
-                        uint64_t chargeFinishTime = current + waitVehicle->getChargeTimeInMs();
-                        eventPriorityQueue.emplace(EventType::CHARGE_OVER, chargeFinishTime, waitVehicle);
-                    }
+                    auto waitForChargePair = chargingQueue.front();
+                    chargingQueue.pop();
+                    
+                    uint64_t waitStartTime = waitForChargePair.first;
+                    Vehicle* waitVehicle = waitForChargePair.second;
+
+                    statsRunner.processWaitForChargeEvent(waitVehicle, waitStartTime, current);
+                    
+                    ++chargersInUse;
+                    uint64_t chargeFinishTime = current + waitVehicle->getChargeTimeInMs();
+                    eventPriorityQueue.emplace(EventType::CHARGE_OVER, chargeFinishTime, waitVehicle);                    
                 }
             }
             break;
@@ -145,11 +131,7 @@ void EvtolSimulation::runSimulation()
 
     // Print the stats after the simulation run
 
-    for(auto& elem : vhTypeMap)
-    {
-        VehicleType& vhType = elem.second;
-        vhType.evaluateStats();
-        vhType.printStats();
-    }
+    statsRunner.evaluateAggregateStats();
+    statsRunner.printAggregateStats();
 }
 
