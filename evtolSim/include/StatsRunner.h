@@ -60,6 +60,16 @@ public:
 
     void printAggregateStats();
 
+    inline const VhTypeAggregateStats& getAggregateStatsForType(VhType type) const
+    {
+        return VhTypeAggregateStatsMap.at(type);
+    }
+
+    inline const VehicleStats& getStatsForVehicle(uint32_t vehicleId) const
+    {
+        return vehicleStatsMap.at(vehicleId);
+    }
+
 private:
     std::map<VhType, VhTypeAggregateStats> VhTypeAggregateStatsMap; // Map of vehicle type to its aggregate stats
     std::map<uint32_t, VehicleStats> vehicleStatsMap; // Map of vehicle ID to its stats
