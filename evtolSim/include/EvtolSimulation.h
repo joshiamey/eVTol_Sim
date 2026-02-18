@@ -8,6 +8,7 @@
 #include <iostream>
 #include <random>
 #include <map>
+#include "ChargerStation.h"
 #include "StatsRunner.h"
 
 class EvtolSimulation
@@ -26,12 +27,11 @@ class EvtolSimulation
         double simDurationInHrs; // amount of time to simulate
         uint64_t simDurationInMs;
         int numVehicles; // total vehicles to be simulated
-        int numChargers;
         // Min-heap of simulation events, ordered by time
         std::priority_queue<VehicleSimEvent, std::vector<VehicleSimEvent>, std::greater<VehicleSimEvent>> eventPriorityQueue;
         std::vector<std::unique_ptr<Vehicle>> simVehicles;
-        std::queue<std::pair<uint64_t,Vehicle*>>chargingQueue;
         StatsRunner statsRunner;
+        ChargerStation chargerStation;
         std::random_device rd;
         std::mt19937 mtGen;
 };

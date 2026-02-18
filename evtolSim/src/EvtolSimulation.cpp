@@ -7,12 +7,12 @@ using namespace std;
 
 EvtolSimulation::EvtolSimulation(int vehicleCount, int chargerCount, double durationInHrs):
     numVehicles(vehicleCount),
-    numChargers(chargerCount),
     simDurationInHrs(durationInHrs),
     simVehicles(),
     rd(),
     mtGen(rd()),
-    statsRunner(mtGen)
+    statsRunner(mtGen),
+    chargerStation(chargerCount)
 {
     simDurationInMs = durationInHrs * kHrsToMs;
     const auto& specificationsmap = getVehicleSpecMap();
@@ -53,8 +53,7 @@ void EvtolSimulation::initializeSimulation()
 
 void EvtolSimulation::runSimulation()
 {
-    uint32_t chargersInUse = 0;
-    uint64_t current = 0;
+    uint64_t currentTime = 0;
 
     // Process events added to the priority queue, events are added based on time 
     // one with least time will be processed
@@ -63,8 +62,8 @@ void EvtolSimulation::runSimulation()
         VehicleSimEvent event = eventPriorityQueue.top();
         eventPriorityQueue.pop();
         
-        current = event.getEventTime();
-        if (current > simDurationInMs) {
+        currentTime = event.getEventTime();
+        if (currentTime > simDurationInMs) {
             break; 
         }
 
@@ -78,18 +77,13 @@ void EvtolSimulation::runSimulation()
             // Add charge over event next or add the vehicle to the charging queue
             case EventType::FLIGHT_OVER:
             {
-                uint64_t flightStartTime = current - vehicle->getFlightTimeInMs();
-                statsRunner.processFlightOverEvent(vehicle, flightStartTime, current);
+                uint64_t flightStartTime = currentTime - vehicle->getFlightTimeInMs();
+                statsRunner.processFlightOverEvent(vehicle, flightStartTime, currentTime);
 
-                if(chargersInUse < numChargers)
+                if(chargerStation.acquireCharger(vehicle,currentTime))
                 {
-                    ++chargersInUse;
-                    uint64_t chargeFinishTime = current + vehicle->getChargeTimeInMs();
+                    uint64_t chargeFinishTime = currentTime + vehicle->getChargeTimeInMs();
                     eventPriorityQueue.emplace(EventType::CHARGE_OVER, chargeFinishTime, vehicle);
-                }
-                else
-                {
-                    chargingQueue.emplace(std::make_pair(current, vehicle));
                 }
             }
             break;
@@ -100,26 +94,24 @@ void EvtolSimulation::runSimulation()
             
             case EventType::CHARGE_OVER:
             {
-                uint64_t chargeStartTime = current - vehicle->getChargeTimeInMs();
-                statsRunner.processChargeOverEvent(vehicle, chargeStartTime, current);
+                uint64_t chargeStartTime = currentTime - vehicle->getChargeTimeInMs();
+                statsRunner.processChargeOverEvent(vehicle, chargeStartTime, currentTime);
 
-                eventPriorityQueue.emplace(EventType::FLIGHT_OVER, current + vehicle->getFlightTimeInMs(), vehicle);
-                --chargersInUse;
+                eventPriorityQueue.emplace(EventType::FLIGHT_OVER, currentTime + vehicle->getFlightTimeInMs(), vehicle);
 
-                if(!chargingQueue.empty())
+                uint64_t waitStartTime = 0;
+                Vehicle* waitVehicle = chargerStation.releaseCharger(&waitStartTime);
+
+                if(waitVehicle != nullptr)
                 {
-
-                    auto waitForChargePair = chargingQueue.front();
-                    chargingQueue.pop();
+                    statsRunner.processWaitForChargeEvent(waitVehicle, waitStartTime, currentTime);
                     
-                    uint64_t waitStartTime = waitForChargePair.first;
-                    Vehicle* waitVehicle = waitForChargePair.second;
-
-                    statsRunner.processWaitForChargeEvent(waitVehicle, waitStartTime, current);
-                    
-                    ++chargersInUse;
-                    uint64_t chargeFinishTime = current + waitVehicle->getChargeTimeInMs();
-                    eventPriorityQueue.emplace(EventType::CHARGE_OVER, chargeFinishTime, waitVehicle);                    
+                    // Enqueue charge over event for that wait vehicle
+                    if(chargerStation.acquireCharger(waitVehicle,currentTime))
+                    {
+                        uint64_t chargeFinishTime = currentTime + waitVehicle->getChargeTimeInMs();
+                        eventPriorityQueue.emplace(EventType::CHARGE_OVER, chargeFinishTime, waitVehicle);                    
+                    }                   
                 }
             }
             break;
